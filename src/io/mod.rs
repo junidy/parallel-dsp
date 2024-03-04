@@ -3,11 +3,17 @@
 #![allow(unused_assignments)]
 #![allow(unused_mut)]
 
+use std::sync::{Arc, Mutex};
+use std::thread::JoinHandle;
 use std::{io, thread};
 use std::time::Duration;
 
 use cpal::{BuildStreamError, Data, Device, Host, OutputStreamTimestamp, Stream, StreamConfig, StreamError, SupportedStreamConfig};
 use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
+use dubble::DoubleBuffered;
+use ringbuf::Rb;
+
+use crate::utils::double_buffer::DoubleBuffer;
 
 pub fn init_host() -> Host {
     cpal::default_host()
@@ -25,12 +31,15 @@ pub fn init_output_device(host: &Host) -> (Device, StreamConfig) {
     (device, config)
 }
 
-type BufferRx = ringbuf::Consumer<f32, std::sync::Arc<ringbuf::SharedRb<f32, Vec<std::mem::MaybeUninit<f32>>>>>;
-pub fn init_output_stream(buffer: BufferRx, device: &Device, config: &StreamConfig) -> Stream {
+// type BufferRx = ringbuf::Consumer<f32, std::sync::Arc<ringbuf::SharedRb<f32, Vec<std::mem::MaybeUninit<f32>>>>>;
+pub fn init_output_stream(buffer: Arc<Mutex<DoubleBuffered<Vec<f32>>>>, manager_handle: JoinHandle<()>, device: &Device, config: &StreamConfig) -> Stream {
     let data_callback = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-        let (b1, b2) = buffer.as_slices();
-        data[..b1.len()].copy_from_slice(b1);
-        data[b1.len()..].copy_from_slice(b2);
+        // Signal to thread manager to begin computing the next buffer
+        manager_handle.thread().unpark();
+        data[..].copy_from_slice(buffer.try_lock().unwrap().read());
+        // let (b1, b2) = buffer.as_slices();
+        // data[..b1.len()].copy_from_slice(b1);
+        // data[b1.len()..].copy_from_slice(b2);
     };
     let error_callback = move |error: StreamError| {
         ()
