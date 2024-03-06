@@ -13,8 +13,6 @@ use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
 use dubble::DoubleBuffered;
 use ringbuf::Rb;
 
-use crate::utils::double_buffer::DoubleBuffer;
-
 pub fn init_host() -> Host {
     cpal::default_host()
 }
