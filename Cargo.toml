@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 cpal = "0.15.2"
-dubble = "0.1.0"
 fundsp = "0.16.0"
 midir = "0.9.1"
 ringbuf = "0.3.3"

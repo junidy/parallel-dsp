@@ -241,12 +241,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c87e182de0887fd5361989c677c4e8f5000cd9491d6d563161a8f3a5519fc7f"
 
 [[package]]
-name = "dubble"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63a3d13d3f3bbd91ac5e915f6dfccb5f999586c93e4c8f3d414b63a86a7623ef"
-
-[[package]]
 name = "duplicate"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -659,7 +653,6 @@ name = "parallel-dsp"
 version = "0.1.0"
 dependencies = [
  "cpal",
- "dubble",
  "fundsp",
  "midir",
  "ringbuf",
