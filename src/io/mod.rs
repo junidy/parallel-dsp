@@ -36,7 +36,8 @@ pub fn init_output_stream(buffer: Arc<Mutex<DoubleBuffered<Vec<f32>>>>, manager_
     let data_callback = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
         // Signal to thread manager to begin computing the next buffer
         manager_handle.thread().unpark();
-        data[..].copy_from_slice(buffer.try_lock().unwrap().read());
+        let buff = buffer.try_lock().unwrap();
+        data.copy_from_slice(&buff.read()[..data.len()]);
         // let (b1, b2) = buffer.as_slices();
         // data[..b1.len()].copy_from_slice(b1);
         // data[b1.len()..].copy_from_slice(b2);
