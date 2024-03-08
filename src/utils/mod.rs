@@ -32,7 +32,7 @@ pub mod double_buffer {
             let index = !self.write_index.load(Ordering::Acquire) as usize;
             // SAFETY: This is safe based on the external guarantee that no other thread is concurrently writing to or reading from this buffer.
             unsafe {
-                output.copy_from_slice(&(*self.buffers[index].get()));
+                output.copy_from_slice(&(*self.buffers[index].get())[..output.len()]);
             }
         }
 
