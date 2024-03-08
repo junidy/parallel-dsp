@@ -12,7 +12,8 @@ fn main() {
     // Initalize our I/O with default settings.
     let host = io::init_host();
     let (input_device, input_stream_config) = io::init_input_device(&host);
-    let (output_device, output_stream_config) = io::init_output_device(&host);
+    let (output_device, mut output_stream_config) = io::init_output_device(&host);
+    output_stream_config.buffer_size = cpal::BufferSize::Fixed(BUFFER_SIZE / 2);
     let buffer_size: SampleCount = get_buffer_size_in_samples(&output_stream_config);
 
     // Debug info

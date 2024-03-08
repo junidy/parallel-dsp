@@ -38,11 +38,12 @@ pub fn get_stream_config(supported_config: SupportedStreamConfig) -> StreamConfi
 }
 
 pub fn init_output_stream(buffer: Arc<DoubleBuffer<f32>>, manager_handle: JoinHandle<()>, device: &Device, config: &StreamConfig) -> Stream {
+    let mut read_ind = 0;
     let data_callback = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
         // buffer.swap();
         // Signal to thread manager to begin computing the next buffer
         manager_handle.thread().unpark();
-        buffer.read(data);
+        buffer.read(data, manager_handle);
         // println!("{:?}", data);
     };
     let error_callback = move |error: StreamError| {
