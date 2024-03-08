@@ -23,13 +23,22 @@ fn manager_loop(output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConf
     // Connect nodes.
     net.pipe(dc_id, sine_id);
     net.pipe_output(sine_id);
-
+    
+    let t_delta = 1.0 / stream_config.sample_rate.0 as f32;
+    let mut t = 0.0;
+    println!("{:?}", stream_config.sample_rate.0);
     loop {
         // Wait until the output buffer has unparked us
         thread::park();
         // Compute the output
         for frame in next_buffer.chunks_mut(2) {
-            (frame[0], frame[1]) = net.get_stereo();
+            let next_sample = (420.0*2.0*3.14*t).sin();
+            t += t_delta;
+            // println!("{t}"); 
+            frame[0] = next_sample;
+            frame[1] = next_sample;
+            
+            // (frame[0], frame[1]) = net.get_stereo();
             // println!("{}", frame[0]);
         }
         output_buffer.write(&next_buffer);

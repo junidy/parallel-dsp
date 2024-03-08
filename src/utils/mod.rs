@@ -13,7 +13,7 @@ pub mod double_buffer {
     // SAFETY: The API must ensure that there are no concurrent writes and reads to the same buffer.
     unsafe impl<T: Copy + Sync> Sync for DoubleBuffer<T> {}
 
-    impl<T: Copy + Default> DoubleBuffer<T> {
+    impl<T: Copy + Default + std::fmt::Debug> DoubleBuffer<T> {
         pub fn new(size: usize) -> Self {
             DoubleBuffer {
                 buffers: [
@@ -36,7 +36,7 @@ pub mod double_buffer {
             // self.swap(); // Assuming switch logic is safe and correct
         }
 
-        pub fn read(&self, output: &mut [T]) -> bool {
+        pub fn read(&self, output: &mut [T], manager_handle: &JoinHandle<()>) {
             let index = !self.write_index.load(Ordering::Acquire) as usize;
 
             let mut ret = false;
@@ -45,7 +45,7 @@ pub mod double_buffer {
             while output_index < output.len() {
                 // println!("{} < {}", output_index, output.len());
                 let read_ind = self.read_index.load(Ordering::Relaxed);
-                let buffer_left = self.buffer_size - self.read_index.load(Ordering::Relaxed);
+                let buffer_left = self.buffer_size - read_ind;
                 let output_left = output.len() - output_index;
                 // println!("{} {}", buffer_left, output_left);
                 let num_to_write = if buffer_left < output_left {
@@ -59,21 +59,22 @@ pub mod double_buffer {
                         &(*self.buffers[index].get())[read_ind..read_ind + num_to_write],
                     );
                 }
+                // println!("{:?} {:?}", output[output_index], output[output_index+num_to_write-1]);
                 output_index += num_to_write;
                 let new_read = read_ind + num_to_write;
 
                 if new_read == self.buffer_size {
                     self.read_index
                         .store(0, Ordering::Release);
-                    ret = true;
                     self.swap();
+                    manager_handle.thread().unpark();
                 } else {
                     self.read_index
                         .store(new_read, Ordering::Release);
                 }
+                // println!("{} < {}", output_index, output.len());
             }
             // println!("wow");
-            return ret;
 
             // SAFETY: This is safe based on the external guarantee that no other thread is concurrently writing to or reading from this buffer.
             // unsafe {
