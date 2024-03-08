@@ -1,6 +1,8 @@
 mod io;
+mod cli;
 mod dsp;
 mod utils;
+
 use std::{sync::{Arc, Mutex}, thread, time::Duration};
 use cpal::traits::DeviceTrait;
 use crate::{io::get_buffer_size_in_samples, utils::double_buffer::DoubleBuffer};
@@ -24,5 +26,9 @@ fn main() {
     let mut output_buffer = Arc::new(DoubleBuffer::<f32>::new(buffer_size));
     let manager_handle = dsp::init_thread_manager(output_buffer.clone(), output_stream_config.clone());
     let output_stream = io::init_output_stream(output_buffer, manager_handle, &output_device, &output_stream_config);
+
+    // Initialize the CLI after everything has been initalized.
+    cli::initialize_cli();
+
     thread::park();
 }
