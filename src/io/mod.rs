@@ -42,8 +42,12 @@ pub fn init_output_stream(buffer: Arc<DoubleBuffer<f32>>, manager_handle: JoinHa
     let data_callback = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
         // buffer.swap();
         // Signal to thread manager to begin computing the next buffer
-        manager_handle.thread().unpark();
-        buffer.read(data, manager_handle);
+        let unpark = buffer.read(data);
+        if unpark {
+            manager_handle.thread().unpark();
+        }
+        // println!("{:?}", data);
+        // println!();
         // println!("{:?}", data);
     };
     let error_callback = move |error: StreamError| {

@@ -33,11 +33,13 @@ pub mod double_buffer {
                 (*self.buffers[index].get()).copy_from_slice(data);
             }
             // Switch the buffer after writing.
-            self.swap(); // Assuming switch logic is safe and correct
+            // self.swap(); // Assuming switch logic is safe and correct
         }
 
-        pub fn read(&self, output: &mut [T], manager_handle: JoinHandle<()>) {
+        pub fn read(&self, output: &mut [T]) -> bool {
             let index = !self.write_index.load(Ordering::Acquire) as usize;
+
+            let mut ret = false;
 
             let mut output_index = 0;
             while output_index < output.len() {
@@ -51,16 +53,27 @@ pub mod double_buffer {
                 } else {
                     output_left
                 };
+                // SAFETY: This is safe based on the external guarantee that no other thread is concurrently writing to or reading from this buffer.
                 unsafe {
                     output[output_index..output_index + num_to_write].copy_from_slice(
                         &(*self.buffers[index].get())[read_ind..read_ind + num_to_write],
                     );
                 }
                 output_index += num_to_write;
-                self.read_index
-                    .store(read_ind + num_to_write, Ordering::Release);
+                let new_read = read_ind + num_to_write;
+
+                if new_read == self.buffer_size {
+                    self.read_index
+                        .store(0, Ordering::Release);
+                    ret = true;
+                    self.swap();
+                } else {
+                    self.read_index
+                        .store(new_read, Ordering::Release);
+                }
             }
-            println!("wow");
+            // println!("wow");
+            return ret;
 
             // SAFETY: This is safe based on the external guarantee that no other thread is concurrently writing to or reading from this buffer.
             // unsafe {
@@ -74,4 +87,3 @@ pub mod double_buffer {
         }
     }
 }
-
