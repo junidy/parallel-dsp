@@ -28,8 +28,8 @@ fn main() {
     let manager_handle = dsp::init_thread_manager(output_buffer.clone(), output_stream_config.clone());
     let output_stream = io::init_output_stream(output_buffer, manager_handle, &output_device, &output_stream_config);
 
-    // Initialize the CLI after everything has been initalized.
-    cli::initialize_cli();
+    // Command line interface
+    cli::cli_main_menu();
 
     thread::park();
 }
