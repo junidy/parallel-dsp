@@ -13,4 +13,4 @@ This doc is where all the information and resources relevant to our project is c
 - Aggregation of external sources to reference in report
 
 ## Usage
-Ensure [Rust is installed](https://www.rust-lang.org/tools/install) on your machine. Navigate to the project directory and run the command `cargo run`.
+Ensure [Rust is installed](https://www.rust-lang.org/tools/install) on your machine. Navigate to the project directory and run the command `cargo run`. Note that as of the time of the milestone, platform-specific I/O bugs are still present; the program will likely panic when not ran on a MacOS device.
