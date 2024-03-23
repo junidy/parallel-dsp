@@ -27,14 +27,17 @@ fn manager_loop(output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConf
     // net.pipe(dc_id, sine_id);
     // net.pipe_output(sine_id);
 
-    let path = Path::new("samples/BarC4.wav");
+    let path = Path::new("samples/guitar.wav");
     // let path = Path::new("BarC4.wav");
     // println!("{:?}", std::env::current_dir().unwrap());
-    let mut wav_reader = get_file_bufreader(path, &stream_config);
-    println!("{:?}", wav_reader.spec());
+    println!("Test");
+    let mut wav_samples = get_samples_from_wav(path, &stream_config);
+    println!("is complete");
+    let mut sample_iter = wav_samples.iter();
     // println!("{:?}", wav_reader.spec());
-    let mut iterator = wav_reader.samples::<i16>();
-    println!("{:?}", iterator.next().unwrap());
+    // println!("{:?}", wav_reader.spec());
+    // let mut iterator = wav_reader.samples::<i16>();
+    // println!("{:?}", iterator.next().unwrap());
     
     loop {
         // Wait until the output buffer has unparked us
@@ -43,13 +46,13 @@ fn manager_loop(output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConf
         // let now = Instant::now();
         for frame in next_buffer.chunks_mut(2) {
             // (frame[0], frame[1]) = net.get_stereo();
-            match iterator.next() {
-                Some(result) => frame[0] = result.expect("s") as f32 / i16::MAX as f32,
+            match sample_iter.next() {
+                Some(result) => frame[0] = *result,
                 // Some(result) => frame[0] = result.expect("s"),
                 None => frame[0] = 0.0,
             }
-            match iterator.next() {
-                Some(result) => frame[1] = result.expect("s") as f32 / i16::MAX as f32,
+            match sample_iter.next() {
+                Some(result) => frame[1] = *result,
                 // Some(result) => frame[1] = result.expect("s"),
                 None => frame[1] = 0.0,
             }

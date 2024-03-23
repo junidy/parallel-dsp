@@ -26,6 +26,14 @@ pub fn init_output_device(host: &Host) -> (Device, StreamConfig) {
     (device, config)
 }
 
+pub fn match_input_output_configs(input_device: &Device, output_device: &Device) -> () {
+    let supported_input_configs = input_device.supported_input_configs().unwrap();
+    let supported_output_configs = output_device.supported_output_configs().unwrap();
+    for supported_config_range in supported_input_configs {
+        println!("{:?}", supported_config_range);
+    }
+}
+
 pub fn get_stream_config(supported_config: SupportedStreamConfig) -> StreamConfig {
     StreamConfig {
         channels: 2,
