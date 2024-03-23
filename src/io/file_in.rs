@@ -13,7 +13,10 @@ pub fn get_samples_from_wav(file_path: &Path, config: &cpal::StreamConfig) -> Ve
     let wav_spec = wav_reader.spec();
 
     let source_audio = fon::Audio::with_frames(wav_spec.sample_rate, reader_to_frames(&mut wav_reader));
+
+    // This line takes egregiously long for some reason
     let mut target_audio = fon::Audio::<fon::chan::Ch32, 2>::with_audio(config.sample_rate.0, &source_audio);
+
     target_audio.as_f32_slice().to_vec()
 }
 

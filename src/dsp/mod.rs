@@ -1,18 +1,20 @@
+mod microphone;
 mod oscillators;
 use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, time::Instant, path::Path};
 use cpal::StreamConfig;
 use fundsp::hacker32::*;
 use ringbuf::{Rb};
-use crate::io::device_out::*;
+use crate::io::{device_out::*, get_buffer_size_in_samples};
 use crate::io::file_in::*;
+use crate::dsp::microphone::*;
 use crate::utils::double_buffer::DoubleBuffer;
 use itertools::Itertools;
 
-pub fn init_thread_manager(output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConfig) -> JoinHandle<()> {
-    thread::spawn(move || manager_loop(output_buffer, stream_config))
+pub fn init_thread_manager(input_buffer: ringbuf::HeapConsumer<f32>, output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConfig) -> JoinHandle<()> {
+    thread::spawn(move || manager_loop(input_buffer, output_buffer, stream_config))
 }
 
-fn manager_loop(output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConfig) {
+fn manager_loop(input_buffer: ringbuf::HeapConsumer<f32>, output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConfig) {
     let mut next_buffer = vec![0.0; get_buffer_size_in_samples(&stream_config)];
 
     // let mut network = Net32::new(0, 2);
@@ -27,38 +29,31 @@ fn manager_loop(output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConf
     // net.pipe(dc_id, sine_id);
     // net.pipe_output(sine_id);
 
-    let path = Path::new("samples/guitar.wav");
-    // let path = Path::new("BarC4.wav");
-    // println!("{:?}", std::env::current_dir().unwrap());
-    println!("Test");
-    let mut wav_samples = get_samples_from_wav(path, &stream_config);
-    println!("is complete");
-    let mut sample_iter = wav_samples.iter();
-    // println!("{:?}", wav_reader.spec());
-    // println!("{:?}", wav_reader.spec());
-    // let mut iterator = wav_reader.samples::<i16>();
-    // println!("{:?}", iterator.next().unwrap());
+    // let path = Path::new("samples/BarC4.wav");
+    // let mut wav_samples = get_samples_from_wav(path, &stream_config);
+    // let mut sample_iter = wav_samples.iter();
+    let mut mic = Microphone::new(input_buffer, 8192);
     
     loop {
         // Wait until the output buffer has unparked us
         thread::park();
         // Compute the output
         // let now = Instant::now();
-        for frame in next_buffer.chunks_mut(2) {
-            // (frame[0], frame[1]) = net.get_stereo();
-            match sample_iter.next() {
-                Some(result) => frame[0] = *result,
-                // Some(result) => frame[0] = result.expect("s"),
-                None => frame[0] = 0.0,
-            }
-            match sample_iter.next() {
-                Some(result) => frame[1] = *result,
-                // Some(result) => frame[1] = result.expect("s"),
-                None => frame[1] = 0.0,
-            }
-            // println!("{}", frame[0]);
-        }
-        output_buffer.write(&next_buffer);
+        // for frame in next_buffer.chunks_mut(2) {
+        //     match sample_iter.next() {
+        //         Some(result) => frame[0] = *result,
+        //         None => frame[0] = 0.0,
+        //     }
+        //     match sample_iter.next() {
+        //         Some(result) => frame[1] = *result,
+        //         None => frame[1] = 0.0,
+        //     }
+        //     // println!("{}", frame[0]);
+        // }
+        // output_buffer.write(&next_buffer);
+        let mic_samples = mic.next_mic_samples();
+        // println!("{:?}", mic_samples);
+        output_buffer.write(&mic_samples);
         // println!("{} ms", now.elapsed().as_millis());
     }
 }
