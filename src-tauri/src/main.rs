@@ -2,15 +2,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod dsp;
-mod gui;
 mod io;
 mod utils;
 use std::{sync::{Arc, Mutex}, thread, time::Duration};
 use cpal::traits::{DeviceTrait, StreamTrait};
-use crate::io::device_out::{self};
+use crate::{io::device_out, utils::double_buffer::DoubleBuffer};
 use crate::io::device_in::{self};
-use crate::utils::double_buffer::DoubleBuffer;
-use crate::gui::*;
+use crate::utils::tauri;
 
 type SampleCount = usize;
 
@@ -37,8 +35,8 @@ fn main() {
     let output_stream = device_out::init_output_stream(output_buffer, manager_handle, &output_device, &output_stream_config);
     input_stream.play().unwrap();
     output_stream.play();
-    tauri::Builder::default()
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+
+    tauri::init_tauri_gui();
+
     thread::park();
 }

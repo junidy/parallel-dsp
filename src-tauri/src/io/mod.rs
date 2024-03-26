@@ -2,14 +2,12 @@ pub mod midi;
 pub mod file_in;
 pub mod device_in;
 pub mod device_out;
-
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use std::{io, panic, thread};
 use std::time::Duration;
 use cpal::{BufferSize, BuildStreamError, Data, Device, FrameCount, Host, OutputStreamTimestamp, Stream, StreamConfig, StreamError, SupportedBufferSize, SupportedStreamConfig};
 use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
-use crate::utils::double_buffer::DoubleBuffer;
 type SampleCount = usize;
 
 pub fn get_stream_config(supported_config: SupportedStreamConfig) -> StreamConfig {

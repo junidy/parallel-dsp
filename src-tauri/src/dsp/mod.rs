@@ -3,10 +3,9 @@ use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, time::Instant, path::P
 use cpal::StreamConfig;
 use fundsp::hacker32::*;
 use ringbuf::{Rb};
-use crate::io::{device_out::*, get_buffer_size_in_samples};
+use crate::{io::{device_out::*, get_buffer_size_in_samples}, utils::double_buffer::DoubleBuffer};
 use crate::io::file_in::*;
 use crate::dsp::generators::*;
-use crate::utils::double_buffer::DoubleBuffer;
 use itertools::Itertools;
 
 pub fn init_thread_manager(input_buffer: ringbuf::HeapConsumer<f32>, output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConfig) -> JoinHandle<()> {

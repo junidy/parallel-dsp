@@ -5,8 +5,9 @@ use std::time::Duration;
 use cpal::{BufferSize, BuildStreamError, Data, Device, FrameCount, Host, OutputStreamTimestamp, Stream, StreamConfig, StreamError, SupportedBufferSize, SupportedStreamConfig};
 use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
 
-use crate::utils::double_buffer::DoubleBuffer;
 type SampleCount = usize;
+use crate::utils::double_buffer::DoubleBuffer;
+
 use super::{get_stream_config, get_buffer_size_in_samples};
 
 pub fn init_host() -> Host {
