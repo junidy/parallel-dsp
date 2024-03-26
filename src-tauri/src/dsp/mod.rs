@@ -1,18 +1,21 @@
-mod microphone;
-mod oscillators;
+mod generators;
 use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, time::Instant, path::Path};
 use cpal::StreamConfig;
 use fundsp::hacker32::*;
 use ringbuf::{Rb};
 use crate::io::{device_out::*, get_buffer_size_in_samples};
 use crate::io::file_in::*;
-use crate::dsp::microphone::*;
+use crate::dsp::generators::*;
 use crate::utils::double_buffer::DoubleBuffer;
 use itertools::Itertools;
 
 pub fn init_thread_manager(input_buffer: ringbuf::HeapConsumer<f32>, output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConfig) -> JoinHandle<()> {
     thread::spawn(move || manager_loop(input_buffer, output_buffer, stream_config))
 }
+
+// fn generate_test_network() -> {
+
+// }
 
 fn manager_loop(input_buffer: ringbuf::HeapConsumer<f32>, output_buffer: Arc<DoubleBuffer<f32>>, stream_config: StreamConfig) {
     let mut next_buffer = vec![0.0; get_buffer_size_in_samples(&stream_config)];

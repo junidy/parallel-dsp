@@ -1,3 +1,6 @@
+// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 mod dsp;
 mod gui;
 mod io;
@@ -7,10 +10,12 @@ use cpal::traits::{DeviceTrait, StreamTrait};
 use crate::io::device_out::{self};
 use crate::io::device_in::{self};
 use crate::utils::double_buffer::DoubleBuffer;
+use crate::gui::*;
 
 type SampleCount = usize;
 
 fn main() {
+
     // Initalize our I/O with default settings.
     let host = device_out::init_host();
     let (output_device, output_stream_config) = device_out::init_output_device(&host);
@@ -32,5 +37,8 @@ fn main() {
     let output_stream = device_out::init_output_stream(output_buffer, manager_handle, &output_device, &output_stream_config);
     input_stream.play().unwrap();
     output_stream.play();
+    tauri::Builder::default()
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
     thread::park();
 }
